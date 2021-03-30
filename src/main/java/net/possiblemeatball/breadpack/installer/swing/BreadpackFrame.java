@@ -1,13 +1,24 @@
 package net.possiblemeatball.breadpack.installer.swing;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 
 public final class BreadpackFrame extends JFrame {
     public BreadpackFrame() {
         super("Breadpack Installer");
+        try {
+            BufferedImage breadIcon = ImageIO.read(getClass().getResourceAsStream("/img/bread.png"));
+            setIconImage(breadIcon.getScaledInstance(64, 64, 0));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         setUndecorated(true);
         getRootPane().setWindowDecorationStyle(JRootPane.NONE);
 
@@ -15,7 +26,7 @@ public final class BreadpackFrame extends JFrame {
         setAutoRequestFocus(true);
 
         MouseAdapter dragListener = new MouseAdapter() {
-            private Point pressedPos = null;
+            Point pressedPos = null;
 
             public void mouseReleased(MouseEvent e) {
                 pressedPos = null;
@@ -37,7 +48,7 @@ public final class BreadpackFrame extends JFrame {
     public final void display() {
         add(new CustomFrameComponent());
         pack();
-        setMinimumSize(getSize());
+        setMinimumSize(new Dimension(1026, 770));
         GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
         int width = gd.getDisplayMode().getWidth();
         int height = gd.getDisplayMode().getHeight();
@@ -47,33 +58,58 @@ public final class BreadpackFrame extends JFrame {
     }
 
     static class CustomFrameComponent extends JComponent {
+        private final Font titleFont;
+
+        public CustomFrameComponent() {
+            Font titleFont;
+            try {
+                titleFont = Font.createFont(Font.TRUETYPE_FONT, getClass().getResourceAsStream("/fonts/bungee.ttf")).deriveFont(48.0f).deriveFont(Font.PLAIN);
+            } catch (FontFormatException | IOException e) {
+                titleFont = new Font(Font.MONOSPACED, Font.BOLD, 48);
+            }
+            this.titleFont = titleFont;
+        }
         @Override
         public Dimension getMinimumSize() {
-            return new Dimension(640, 480);
-        }
-
-        @Override
-        public Dimension getPreferredSize() {
-            return new Dimension(1024, 768);
+            return new Dimension(1026, 770);
         }
 
         @Override
         public void paintComponent(Graphics g) {
             Dimension dim = getSize();
             Graphics2D g2d = (Graphics2D) g;
+            g2d.setFont(titleFont);
+            g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
             super.paintComponent(g);
-            // painting the border
-            g.setColor(Color.black);
-            g.fillRect(0, 0, dim.width, dim.height);
+            paintBorder(g2d, dim);
 
-            g.setColor(Color.gray);
-            g.fillRect(1, 1, dim.width - (1 * 2), dim.height - (1 * 2));
+            g2d.setColor(Color.darkGray);
+            g2d.fill(new Rectangle2D.Float(2, 2, dim.width - 4, dim.height - 4));
 
-            g.setColor(Color.darkGray);
-            g.fillRect(2, 2, dim.width - (2 * 2), dim.height - (2 * 2));
+            try {
+                BufferedImage breadIcon = ImageIO.read(getClass().getResourceAsStream("/img/bread.png"));
 
-            // close / minimize buttons
+                g2d.drawImage(breadIcon.getScaledInstance(48, 48, 0), 8, 8, null);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
+            g2d.setColor(Color.black);
+            g2d.drawString("Breadpack Installer", (10 * 6) - 1, 50 - 1);
+            g2d.setColor(Color.white);
+            g2d.drawString("Breadpack Installer", (10 * 6), 50);
+        }
+
+        // border painting
+        private void paintBorder(Graphics2D g2d, Dimension dim) {
+            float offset = 0;
+            g2d.setColor(Color.black);
+            g2d.draw(new Rectangle2D.Float());
+            g2d.draw(new Rectangle2D.Float(offset, offset, dim.width - (offset * 2) - 1, dim.height - (offset * 2) - 1));
+
+            g2d.setColor(Color.gray);
+            offset = 1;
+            g2d.draw(new Rectangle2D.Float(offset, offset, dim.width - (offset * 2) - 1, dim.height - (offset * 2) - 1));
         }
     }
 }
