@@ -32,25 +32,27 @@ public final class BreadpackFrame extends JFrame {
     }
 
     public final void display() {
-        add(new CustomFrameComponent(this));
-        pack();
-        setMinimumSize(new Dimension(1026, 770));
         GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
         int width = gd.getDisplayMode().getWidth();
         int height = gd.getDisplayMode().getHeight();
-
+        setMinimumSize(new Dimension(1026, 770));
         setLocation((width / 2) - (getWidth() / 2), (height / 2) - (getHeight() / 2));
+
+        setLayout(null);
+        add(new CustomFrameComponent(this));
+        pack();
+
         setVisible(true);
     }
 
     static class CustomFrameComponent extends JComponent {
         private final Font titleFont;
-        private final Font basicFont;
+
         protected boolean dragging;
-        private String hoveringOver = "";
         private final BufferedImage breadIcon;
 
         public CustomFrameComponent(BreadpackFrame frame) {
+            setBounds(0, 0, 1026, 770);
             breadIcon = frame.breadIcon;
             Font titleFont;
             try {
@@ -58,32 +60,32 @@ public final class BreadpackFrame extends JFrame {
             } catch (FontFormatException | IOException e) {
                 titleFont = new Font(Font.MONOSPACED, Font.BOLD, 48);
             }
-            Font basicFont;
-            try {
-                basicFont = Font.createFont(Font.TRUETYPE_FONT, getClass().getResourceAsStream("/fonts/anonymouspro.ttf")).deriveFont(18.0f).deriveFont(Font.PLAIN);
-            } catch (FontFormatException | IOException e) {
-                basicFont = new Font(Font.MONOSPACED, Font.BOLD, 18);
-            }
             this.titleFont = titleFont;
-            this.basicFont = basicFont;
 
             MouseAdapter dragListener = new MouseAdapter() {
                 Point pressedPos = null;
 
                 @Override
                 public void mouseReleased(MouseEvent e) {
+                    super.mouseReleased(e);
                     pressedPos = null;
                     dragging = false;
                 }
 
                 @Override
                 public void mousePressed(MouseEvent e) {
-                    pressedPos = e.getPoint();
-                    dragging = true;
+                    super.mousePressed(e);
+                    Dimension dim = getSize();
+                    Point pos = e.getPoint();
+                    if (pos.x >= 2 && pos.y >= 2 && pos.x <= dim.width - 4 && pos.y <= 56) {
+                        pressedPos = e.getPoint();
+                        dragging = true;
+                    }
                 }
 
                 @Override
                 public void mouseDragged(MouseEvent e) {
+                    super.mouseDragged(e);
                     Point pos = e.getLocationOnScreen();
                     if (dragging)
                         frame.setLocation(pos.x - pressedPos.x, pos.y - pressedPos.y);
@@ -93,6 +95,7 @@ public final class BreadpackFrame extends JFrame {
             MouseAdapter controlListener = new MouseAdapter() {
                 @Override
                 public void mousePressed(MouseEvent e) {
+                    super.mousePressed(e);
                     Dimension dim = getSize();
                     Point pos = e.getPoint();
                     //close button
@@ -114,6 +117,15 @@ public final class BreadpackFrame extends JFrame {
             addMouseListener(controlListener);
             addMouseListener(dragListener);
             addMouseMotionListener(dragListener);
+
+            BreadpackStepLayoutBox stepLayoutBox = new BreadpackStepLayoutBox(frame);
+            stepLayoutBox.setBounds(8, 58, 254, getSize().height - 67);
+            add(stepLayoutBox);
+
+            BreadpackContainer container = new BreadpackContainer(frame);
+            container.setBounds(268, 58, getSize().width - 276, getSize().height - 67);
+            add(container);
+            container.setVisible(true);
         }
         @Override
         public Dimension getMinimumSize() {
@@ -133,15 +145,16 @@ public final class BreadpackFrame extends JFrame {
             g2d.fill(new Rectangle2D.Float(2, 2, dim.width - 4, dim.height - 4));
 
             if (breadIcon != null) {
-                g2d.drawImage(breadIcon.getScaledInstance(48, 48, 0), 8, 8, null);
+                g2d.drawImage(breadIcon.getScaledInstance(48, 48, 0), 6, 5, null);
             }
 
             g2d.setColor(Color.black);
-            g2d.drawString("Breadpack Installer", (10 * 6) - 1, 50 - 1);
+            g2d.drawString("BREADPACK INSTALLER", (10 * 6) - 1, 48 - 1);
             g2d.setColor(Color.white);
-            g2d.drawString("Breadpack Installer", (10 * 6), 50);
+            g2d.drawString("BREADPACK INSTALLER", (10 * 6), 48);
 
             paintWindowControls(g2d, dim);
+
         }
 
         private void paintWindowControls(Graphics2D g2d, Dimension dim) {
@@ -161,15 +174,6 @@ public final class BreadpackFrame extends JFrame {
             g2d.draw(new Rectangle2D.Float(dim.width - x, y, 16, 16));
 
             // i hate the way i did this too
-
-            if (!hoveringOver.isEmpty()) {
-                g2d.setColor(Color.darkGray);
-                g2d.fill(new Rectangle2D.Float(getMousePosition().x - 2, getMousePosition().y - 2, 16, 16));
-                g2d.setColor(Color.black);
-                g2d.draw(new Rectangle2D.Float(getMousePosition().x - 2, getMousePosition().y - 2, 16, 16));
-                g2d.setFont(basicFont);
-                g2d.drawString(hoveringOver, getMousePosition().x - 2, getMousePosition().y - 2);
-            }
         }
 
         // border painting
