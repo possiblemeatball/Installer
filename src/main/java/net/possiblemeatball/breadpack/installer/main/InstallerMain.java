@@ -1,4 +1,4 @@
-package net.possiblemeatball.breadpack.installer;
+package net.possiblemeatball.breadpack.installer.main;
 
 import net.possiblemeatball.breadpack.installer.swing.BreadpackFrame;
 

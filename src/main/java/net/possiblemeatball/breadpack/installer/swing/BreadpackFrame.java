@@ -1,5 +1,7 @@
 package net.possiblemeatball.breadpack.installer.swing;
 
+import sun.misc.BASE64Decoder;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -10,14 +12,18 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 public final class BreadpackFrame extends JFrame {
+    public final BufferedImage breadIcon;
     public BreadpackFrame() {
         super("Breadpack Installer");
+        BufferedImage breadIcon;
         try {
-            BufferedImage breadIcon = ImageIO.read(getClass().getResourceAsStream("/img/bread.png"));
-            setIconImage(breadIcon.getScaledInstance(64, 64, 0));
+            breadIcon = ImageIO.read(getClass().getResourceAsStream("/img/bread.png"));
         } catch (IOException e) {
-            e.printStackTrace();
+            breadIcon = null;
         }
+        this.breadIcon = breadIcon;
+        setIconImage(breadIcon);
+
         setUndecorated(true);
         getRootPane().setWindowDecorationStyle(JRootPane.NONE);
 
@@ -42,8 +48,10 @@ public final class BreadpackFrame extends JFrame {
         private final Font basicFont;
         protected boolean dragging;
         private String hoveringOver = "";
+        private final BufferedImage breadIcon;
 
         public CustomFrameComponent(BreadpackFrame frame) {
+            breadIcon = frame.breadIcon;
             Font titleFont;
             try {
                 titleFont = Font.createFont(Font.TRUETYPE_FONT, getClass().getResourceAsStream("/fonts/bungee.ttf")).deriveFont(48.0f).deriveFont(Font.PLAIN);
@@ -124,12 +132,8 @@ public final class BreadpackFrame extends JFrame {
             g2d.setColor(Color.darkGray);
             g2d.fill(new Rectangle2D.Float(2, 2, dim.width - 4, dim.height - 4));
 
-            try {
-                BufferedImage breadIcon = ImageIO.read(getClass().getResourceAsStream("/img/bread.png"));
-
+            if (breadIcon != null) {
                 g2d.drawImage(breadIcon.getScaledInstance(48, 48, 0), 8, 8, null);
-            } catch (IOException e) {
-                e.printStackTrace();
             }
 
             g2d.setColor(Color.black);
